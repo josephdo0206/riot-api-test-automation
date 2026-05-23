@@ -31,6 +31,6 @@ jobs:
         # Replace the .json filenames below with your actual file names.
         # Ensure the --env-var target matches the variable name in your Postman environment.
         run: |
-          newman run Riot API MVP.postman_collection.json \
-            -e Riot API - Dev.postman_environment.json \
+          newman run "Riot API MVP.postman_collection.json" \
+            -e "Riot API - Dev.postman_environment.json" \
             --env-var "api_key=$SECURE_API_KEY"

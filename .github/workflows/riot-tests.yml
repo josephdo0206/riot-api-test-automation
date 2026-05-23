@@ -33,4 +33,4 @@ jobs:
         run: |
           newman run "Riot API MVP.postman_collection.json" \
             -e "Riot API - Dev.postman_environment.json" \
-            --env-var "api_key=$SECURE_API_KEY"
+            --env-var "riot_api_key=$SECURE_API_KEY"

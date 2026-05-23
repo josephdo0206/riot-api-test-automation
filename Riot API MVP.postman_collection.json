@@ -1,0 +1,199 @@
+{
+  "info": {
+    "_postman_id": "e2e0ca16-117c-48fd-b2ad-eb8f2257c0fc",
+    "name": "Riot API MVP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "6606161"
+  },
+  "item": [
+    {
+      "name": "1. Get Account PUUID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Parse the JSON response so Postman can read it\r",
+              "const responseJson = pm.response.json();\r",
+              "\r",
+              "// 2. Extract the puuid and save it dynamically to your secure environment\r",
+              "pm.environment.set(\"player_puuid\", responseJson.puuid);\r",
+              "\r",
+              "// 3. QA test to make sure status code is 200 OK\r",
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Riot-Token",
+            "value": "{{riot_api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/Meogitarius/NA1",
+          "protocol": "https",
+          "host": [
+            "americas",
+            "api",
+            "riotgames",
+            "com"
+          ],
+          "path": [
+            "riot",
+            "account",
+            "v1",
+            "accounts",
+            "by-riot-id",
+            "Meogitarius",
+            "NA1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get Match History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Parse the array\r",
+              "const matchIds = pm.response.json();\r",
+              "\r",
+              "// 2. Grab the very first item in the array (index 0) and save it\r",
+              "pm.environment.set(\"target_match_id\", matchIds[0]);\r",
+              "\r",
+              "// 3. QA assertion to prove pagination is working!\r",
+              "pm.test(\"Status is 200 OK and exactly 5 matches returned\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(matchIds.length).to.eql(5);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Riot-Token",
+            "value": "{{riot_api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{{player_puuid}}/ids?start=0&count=5",
+          "protocol": "https",
+          "host": [
+            "americas",
+            "api",
+            "riotgames",
+            "com"
+          ],
+          "path": [
+            "lol",
+            "match",
+            "v5",
+            "matches",
+            "by-puuid",
+            "{{player_puuid}}",
+            "ids"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "0"
+            },
+            {
+              "key": "count",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Match Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Parse that massive wall of 3,500 lines\r",
+              "const matchData = pm.response.json();\r",
+              "\r",
+              "// 2. The standard status check\r",
+              "pm.test(\"Server returned 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 3. The Structure Check: Ensure the match isn't corrupted\r",
+              "pm.test(\"Match contains exactly 10 players\", function () {\r",
+              "    // We navigate down the JSON tree: matchData -> info -> participants\r",
+              "    pm.expect(matchData.info.participants.length).to.eql(10);\r",
+              "});\r",
+              "\r",
+              "// 4. The Business Logic Check: Verify the game mode\r",
+              "pm.test(\"Game mode is correctly logged as ARAM\", function () {\r",
+              "    pm.expect(matchData.info.gameMode).to.eql(\"ARAM\");\r",
+              "});\r",
+              "\r",
+              "// 5. The Deep Data Flex: Check the first player's win state\r",
+              "pm.test(\"First player has a valid win/loss boolean\", function () {\r",
+              "    const firstPlayer = matchData.info.participants[0];\r",
+              "    // This proves we know how to check data types, not just values\r",
+              "    pm.expect(firstPlayer.win).to.be.a(\"boolean\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Riot-Token",
+            "value": "{{riot_api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://americas.api.riotgames.com/lol/match/v5/matches/{{target_match_id}}",
+          "protocol": "https",
+          "host": [
+            "americas",
+            "api",
+            "riotgames",
+            "com"
+          ],
+          "path": [
+            "lol",
+            "match",
+            "v5",
+            "matches",
+            "{{target_match_id}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
